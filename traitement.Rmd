@@ -1,0 +1,166 @@
+---
+title: "Traitement de données d'enquête"
+author: "Ibrahima TALL"
+date: "2022-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/statnengineer/Documents")
+Sys.setenv(TZ='UTC')
+
+```
+
+Le controle de l'environnement
+
+```{r system}
+list.dirs(recursive = FALSE)
+choose.dir()
+getwd()
+setwd("./RPubs")
+list.files()
+
+```
+
+Les packages nécessaires sont chargés ci-après:
+
+```{r packages, echo=FALSE, include=FALSE}
+# Importation de la base de données
+library(tidyverse)
+library(DescTools)
+library(foreign)
+library(haven)
+library(readxl)
+library(openxlsx)
+library(xlsx)
+```
+
+## Introduction
+
+Le traitement de onnées est une phase importante et cruciale dans une étude basée sur un sondage. Dans cet article, il sera question d'aborder les aspects essentiels sur:
+
+ - les statistiques descriptives (univariée et bivariée);
+ - les tableaux; et
+ - les figures.
+
+La base de données est un répartoire fictif des entreprises du Sénégal composée de 300 000 entreprises sur un fichier excel.
+
+```{r import-export, echo=FALSE}
+data()
+data("iris")
+names(iris)
+str(iris$Species)
+str(Species)
+attach(iris)
+str(Species)
+tail <- sample.int(n = 3, size = length(Species), replace = TRUE)
+iris$size  <- tail
+detach(iris)
+save(iris, file = "myenv.RData")
+save(iris, file = "mydb.rda")
+save.image()
+
+rm(list = ls())
+.rs.restartR()
+
+list.files(path = system.file("examples", package="haven"))
+
+load(file = "mydb.rda")
+rm(list = ls())
+load(file = "myenv.RData")
+rm(list = ls())
+load(file = ".RData")
+
+write_sav(iris, myspss <- tempfile(fileext = ".sav"))
+file.rename(myspss, "spss_data.sav")
+dspss <- read_sav("spss_data.sav")
+
+write_dta(iris, mystata <- tempfile(fileext = ".dta"))
+file.rename(mystata, "stata_data.dta")
+dstata <- read_dta("stata_data.dta")
+
+write_sas(mtcars, mysas <- tempfile(fileext = ".sas7bdat"))
+file.rename(mysas, "sas_data.sas7bdat")
+dsas <- read_sas("sas_data.sas7bdat")
+
+write_delim(mtcars, "csv_data.csv", delim = ",")
+bd <- read_delim(choose.files(), delim = ",")
+bd <- read.delim(choose.files(), sep = ",")
+bd <- read_csv(choose.files(), col_names = c("mpg","disp","carb"))
+bd <- read.csv(choose.files(), col_names = c("mpg","disp","carb"))
+bd <- fread(choose.files(), select = col_names = c("mpg","disp","carb"))
+
+write_delim(mtcars, "csv2_data.csv", delim = ";")
+bd <- read_csv2(choose.files())
+bd <- read.csv2(choose.files())
+
+
+write.xlsx(iris, "data.xlsx", sheetName = "iris", row.names = FALSE)
+write.xlsx(mtcars, "data.xlsx", sheetName="mtcars", row.names=F, append = T)
+excel_sheets("data.xlsx")
+bd <- read_excel(choose.files(), sheet=1, n_max=10, range=cell_cols("A:D"))
+bd <- read_excel(choose.files(), sheet = 1, range = cell_rows(1:5))
+bd <- read_excel(choose.files(), range = "iris!A1:D10")
+
+readxl_example()
+bd <- readxl_example("datasets.xlsx")
+excel_sheets(bd)
+read_excel(bd, sheet = "iris")
+bd <- system.file("extdata", "datasets.xlsx", package = "readxl")
+bd <-read.xlsx(bd, sheetIndex = 1)
+
+
+cls <- createWorkbook(type = "xlsx")
+f1 <- createSheet(cls, sheetName = "Mes mtcars")
+f2 <- createSheet(cls, sheetName = "Mes iris")
+addDataFrame(x = mtcars[1:5,], sheet = f1, startRow = 2, startColumn = 2)
+addDataFrame(x = iris[1:5,], sheet = f2, startRow = 2, startColumn = 2)
+saveWorkbook(cls, file = "MonExcel.xlsx")
+```
+
+Lecture de données depuis un classeur excel
+
+```{r tableaux}
+
+```
+
+
+## 1. Manipulation sur les variables et les observations
+
+```{r carateristic}
+# Liste des variables de la
+names(base)
+dim(base)
+```
+
+```{r part-obs}
+# Extracte base
+tail(base)
+tail(base, 6)
+head(base)
+(BD <- head(base, 10))
+BD[c(2,4:6), ]
+BD[-c(2,7:10), ]
+BD[which(BD$SEXE=='Femme' & BD$AGE > 25),]
+filter(BD, !(REG %in% c("THIES", "DAKAR"))| AGE <= 25 & SEXE == "Femme")
+
+```
+
+
+```{r part-vars}
+BD$SEXE
+BD["SEXE"]
+BD[c("SEXE","ACTIVITE")]
+BD[c(2,5)]
+BD[names(BD) %in% c("SEXE", "EMPLOI", "ACTIVITE")]
+
+```
+
+
+```{r trier}
+# Trier les lignes
+BD[with(BD, order(REG, -AGE))]
+arrange(BD, REG, desc(AGE))
+```
+
