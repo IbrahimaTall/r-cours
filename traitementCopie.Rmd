@@ -1,0 +1,301 @@
+---
+title: "Traitement de données d'enquête"
+author: "Ibrahima TALL"
+date: "2022-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/statnengineer/Documents/RPubs")
+Sys.setenv(TZ = "UTC")
+
+```
+
+Les packages nécessaires sont chargés ci-après:
+
+```{r packages, echo=FALSE, include=FALSE}
+# Importation de la base de données
+library(tidyverse)
+library(haven)
+library(readxl)
+library(xlsx)
+library(data.table)
+library(sjlabelled)
+library(tables)
+library(DescTools)
+library(vcdExtra)
+library(knitr)
+#library(labelled)
+#library(openxlsx)
+#library(gmodels)
+#library(vcd)
+#library(kableExtra)
+```
+
+Le controle de l'environnement avec des fonctionalités intéressantes.
+
+```{r system}
+.rs.restartR()
+R.version
+getRversion()
+sessionInfo()
+.libPaths()
+list.dirs(recursive = FALSE)
+choose.dir()
+getwd()
+setwd("C:/Users/statnengineer/Documents")
+list.files()
+list.dirs()
+system.file("demo", package = "base")
+list.files(system.file("demo", package = "base"))
+system.file("demo", "recursion.R", package = "base")
+options(fmt.num=structure(list(digits=3), class="fmt"))
+# Save the options
+init_opts = options()
+save(init_opts, file="init_opts.rda")
+load("init_opts.rda")
+
+```
+
+R comme calculatrice et outil d'analyse statistiques
+
+```{r debut}
+9+2
+9-2
+9*2
+9^2
+9%/%2
+9%%2
+factorial(3)
+a <- 1:10
+b <- c(1,4,7:10)
+c <- rep(c(1,3,5), 2)
+d <- rep(c(1,3,5), each = c(4,4,2))
+e <- rep.int(c(1,3,5), times = c(4,4,2))
+f <- rep_len(c(1,3,5), length.out = 10)
+
+x <- letters[1:4]
+Primes(n = 20)
+(y <- sample(1:20, 5))
+IsPrime(y)
+Factorize(n = c(56, 42))
+Divisors(c(221, 452))
+GCD(64, 80, 160)
+LCM(10, 4, 12, 9, 2)
+Fibonacci(1:12)
+factorial(5)
+Permn(x)
+CombN(4, 2, repl = FALSE, ord = TRUE)
+CombSet(x, 2, repl=FALSE, ord=TRUE)
+choose(4, 2)
+CombPairs(letters[1:3], letters[4:6])
+
+```
+
+
+## Introduction
+
+Le traitement de onnées est une phase importante et cruciale dans une étude basée sur un sondage. Dans cet article, il sera question d'aborder les aspects essentiels sur:
+
+ - les statistiques descriptives (univariée et bivariée);
+ - les tableaux; et
+ - les figures.
+
+La base de données est un répartoire fictif des entreprises du Sénégal composée de 300 000 entreprises sur un fichier excel.
+
+```{r import-export, echo=FALSE}
+data()
+data(package = .packages(all.available = TRUE))
+data("iris","mtcars")
+names(iris)
+str(iris$Species)
+str(Species)
+attach(iris)
+str(Species)
+tail <- sample.int(n = 3, size = length(Species), replace = TRUE)
+detach(iris)
+
+dir.exists("MyData")
+dir.create("MyData")
+save(iris, file = "./MyData/myenv.RData")
+save(iris, file = "./MyData/mydb.rda")
+save.image("./MyData/.RData")
+
+rm(list = ls())
+#.rs.restartR()
+
+load(file = "./MyData/mydb.rda")
+rm(list = ls())
+load(file = "./MyData/myenv.RData")
+rm(list = ls())
+load(file = "./MyData/.RData")
+
+list.files(path = system.file("examples", package = "haven"))
+
+write_sav(iris, myspss <- tempfile(fileext = ".sav"))
+file.rename(myspss, "./MyData/spss_data.sav")
+sav <- read_sav("./MyData/spss_data.sav")
+
+write_dta(mtcars, mystata <- tempfile(fileext = ".dta"))
+file.rename(mystata, "./MyData/stata_data.dta")
+dta <- read_dta("./MyData/stata_data.dta")
+
+write_sas(mtcars, mysas <- tempfile(fileext = ".sas7bdat"))
+file.rename(mysas, "./MyData/sas_data.sas7bdat")
+sas <- read_sas("./MyData/sas_data.sas7bdat")
+
+write_delim(mtcars, "./MyData/csv_data.csv", delim = ",")
+dt <- read_delim(choose.files(), delim = ",", show_col_types = FALSE)
+dt <- read.delim(choose.files(), sep = ",")
+dt <- read_csv(choose.files(), show_col_types = FALSE)
+dt <- read.csv(choose.files())
+
+names(dt)
+dt <- fread(choose.files(), select = c("mpg","disp","carb"))
+names(dt)
+
+write_delim(mtcars, "./MyData/csv2_data.csv", delim = ";")
+dt <- read_csv2(choose.files(), show_col_types = FALSE)
+dt <- read.csv2(choose.files())
+
+write.xlsx(iris, "./MyData/data.xlsx", sheetName = "Moniris", 
+           row.names = FALSE)
+write.xlsx(mtcars, "./MyData/data.xlsx", sheetName = "Monmtcars", 
+           row.names = F, append = T)
+excel_sheets("./MyData/data.xlsx")
+dt <- read_excel(choose.files(), range = "Moniris!A1:D10")
+dt <- read_excel(choose.files(), sheet = "Moniris", 
+                 range = cell_rows(1:5))
+dt <- read_excel(choose.files(), sheet = 1, range = cell_cols("A:D"))
+dt <-read.xlsx(choose.files(), sheetIndex = 1)
+
+readxl_example()
+cls <- readxl_example("datasets.xlsx")
+excel_sheets(cls)
+dt <- read_excel(cls, sheet = "iris")
+
+cls <- createWorkbook(type = "xlsx")
+f1 <- createSheet(cls, sheetName = "Mes mtcars")
+f2 <- createSheet(cls, sheetName = "Mes iris")
+addDataFrame(x = mtcars[1:5,], sheet = f1, startRow = 2, startColumn = 2)
+addDataFrame(x = iris[1:5,], sheet = f2, startRow = 2, startColumn = 2)
+saveWorkbook(cls, file = "./MyData/MonExcel.xlsx")
+list.files("./MyData/")
+unlink("MyData", recursive = TRUE)
+
+```
+
+Lecture de données depuis un classeur excel
+
+```{r creation-manipulation}
+rm(list = setdiff(ls(), "dt"))
+# Manipulations sur les noms de variables
+names(dt)
+names(dt) <- c("sepal_l", "sepal_w", "petal_l", "petal_w","species")
+names(dt)
+names(dt)[names(dt) %in% c("sepal_l","petal_l")]<-c("slong","plong")
+names(dt)
+names(dt)[match(c("slong","plong"), names(dt), nomatch = FALSE)] <- c("sep_long","pet_long")
+names(dt)
+rename(dt, longeur_sepal = sep_long, longeur_petal = pet_long)
+rename_with(dt, toupper, ends_with("w"))
+#Creation de variables
+dt$size <- sample(x = c(1,2,3), size = length(dt$species), replace = TRUE)
+dt$sexe <- gl(n = 2, k = 75, length = 150, labels = c("Homme", "Femme"))
+dt <- mutate(dt,
+       high_sepal = ifelse(sep_long < mean(sep_long), 0, 1),
+       high_petal = if_else(pet_long < mean(pet_long), 0, 1, 99),
+       weighted = case_when(sepal_w < 3 | petal_w < 1.5 ~ 1,
+                             sepal_w < 3 | petal_w >= 1.5 ~ 2,
+                             sepal_w >= 3 | petal_w < 1.5 ~ 3,
+                             TRUE ~ 4),
+       species_bis = recode(species, versicolor = "vcouleur", .default = levels(species)),
+       logsepal = log(sep_long),
+       unif = runif(length(sepal_w), min = 1, max = 10),
+       norm = rnorm(length(sepal_w), mean = 3, sd = 1)
+       )
+# Labelles des variables
+dt$sep_long <- set_label(dt$sep_long, "Le poids du sepal")
+var_label(dt$sepal_w) <- "Le poids du sepal"
+var_label(dt) <- list(pet_long = "Longeur du petal", petal_w = "Poids du Petal")
+dt$size <- labelled(dt$size, labels = c(Petit = 1, Moyen = 2, Grand = 3), label = "Taille fictive") 
+
+get_label(dt, sep_long, pet_long, size)
+attr(dt$size, "label")
+
+var_label(dt$sepal_w) <- NULL
+var_label(dt) <- NULL
+
+# Les values labels des variables catégrielles
+dt$sexe <- as_factor(dt$sexe, levels = "v", ordered = TRUE)
+dt$high_sepal <- factor(dt$high_sepal, levels = c(0,1), labels = c("Petit", "Grand"))
+
+dt$high_petal <- set_labels(dt$high_petal, labels = c("Petit", "Grand"))
+dt$weighted <- labelled(dt$weighted, labels = c(Petit = 1, Grand = 2), label = "Poids fictive")
+val_labels(dt$weighted) <- c(Petit = 1, Grand = 2)
+val_labels(dt) <- list(high_petal = c(Petit = 1, Grand = 2), weighted = c(Petit = 1, Grand = 2))
+val_label(dt$weighted, 2) <- "Great"
+val_label(dt[, c("high_petal", "weighted")], 1) <- "Short"
+val_labels(dt[, c("high_petal", "weighted")]) <- c(small = 1, Big = 2)
+
+val_labels(dt[, c("high_petal", "weighted")])
+val_labels(dt$weighted)
+val_label(dt$weighted, 2)
+attr(dt$weighted, "levels")
+attr(dt$weighted, "labels")
+
+val_label(dt$weighted, 2) <- NULL
+val_labels(dt$weighted) <- NULL
+val_labels(dt[, c("high_petal", "weighted")]) <- NULL
+val_labels(dt) <- NULL
+
+```
+
+Creation de tableaux bivariés
+
+```{r tabulation}
+Freq(dt$species, ord = "desc")
+table(dt$species)
+Margins(table(dt$species), ord = "desc")
+prop.table(table(dt$species))
+PercTable(species ~ size, data = dt, rfrq = "111", margins = c(1,2))
+(tab <- with(dt, table(species, size, high_petal, weighted)))
+margin.table(tab, margin = c(1,3))
+marginSums(tab, margin = c(1,3))
+ftable(tab, row.vars = c(2, 3))
+ftable(tab, row.vars = c("size", "high_petal"))
+Desc(tab, verbose = "high", expected = TRUE)
+dimnames(tab)
+dimnames(aperm(tab, c(2,3,1)))
+Rev(tab, margin = c(1, 3)) #reversing level
+apply(tab, 1, sum)
+apply(tab, c(2,3), sum)
+apply(tab, c("size", "high_petal"), sum)
+mat 
+migraine <- xtabs(Freq ~ species + size + weighted, data = tab)
+migraine
+structable(migraine)
+margin.table(migraine, c(1,2))
+ptab <- prop.table(migraine, c(2,3))
+
+ptab[] <- Format(ptab, digits = 1, fmt = "%")
+ptab
+CollapseTable(tab, species = c("setosa", "setosa", "virginica "), size = c(1,2,2))
+structable(collapse.table(tab, species = c("setosa", "setosa", "virginica "), size = c(1,2,2)))
+cb <- array(tab, dim = c(3,3,2))
+Abind(cb[,,1], cb[,,2], along = 3)
+aggregate(cbind(sep_long, pet_long)~species, data = dt, FUN = sum)
+aperm(tab, c(2,3,1))
+tab[] <- Format(tab, big.mark = "'", digits = 0, zero.form = "-", na.form = "Missing")
+tab[] <- StrAlign(tab, "\\r")
+tab
+CrossTable(dt$species, dt$weighted, prop.t = FALSE, prop.r = FALSE, prop.c = FALSE, digits = 2)
+dt$species <- as_factor(dt$species)
+(tabular <- tabular((species+1) ~ (n=1) + Format(digits=2)*(sep_long+sepal_w)*(mean+sd), data=dt))
+kable(tabular, digits = 2)
+
+```
+
+
+## 1. Manipulation sur les variables et les observations
