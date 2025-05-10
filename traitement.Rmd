@@ -45,7 +45,7 @@ Le traitement de onnées est une phase importante et cruciale dans une étude ba
  - les tableaux; et
  - les figures.
 
-La base de données est un répartoire fictif des entreprises du Sénégal composée de 300 000 entreprises sur un fichier excel. Nous allons illustrer 
+La base de données est un répartoire fictif des entreprises du Sénégal composée de 300 000 entreprises sur un fichier excel. Nous allons illustrer méthodes d'importation. 
 
 ```{r import-export, echo=FALSE}
 data()
