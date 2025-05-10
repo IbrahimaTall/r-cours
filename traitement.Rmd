@@ -12,7 +12,7 @@ Sys.setenv(TZ='UTC')
 
 ```
 
-Le controle de l'environnement
+Le controle de l'environnement rstudio
 
 ```{r system}
 list.dirs(recursive = FALSE)
