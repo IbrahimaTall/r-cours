@@ -120,7 +120,7 @@ addDataFrame(x = iris[1:5,], sheet = f2, startRow = 2, startColumn = 2)
 saveWorkbook(cls, file = "MonExcel.xlsx")
 ```
 
-Lecture de données depuis un classeur excel
+Lecture de données depuis excel
 
 ```{r tableaux}
 # Lirevlanbase
