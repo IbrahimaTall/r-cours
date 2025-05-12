@@ -149,7 +149,7 @@ filter(BD, !(REG %in% c("THIES", "DAKAR"))| AGE <= 25 & SEXE == "Femme")
 ```
 
 
-```{r part-vars}
+```{r pvars}
 BD$SEXE
 BD["SEXE"]
 BD[c("SEXE","ACTIVITE")]
