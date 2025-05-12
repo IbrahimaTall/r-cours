@@ -23,7 +23,7 @@ list.files()
 
 ```
 
-Les packages nécessaires sont chargés
+Les packages nécessaires sont chargés ci-après 
 
 ```{r packages, echo=FALSE, include=FALSE}
 # Importation de la base de données
