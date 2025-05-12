@@ -40,7 +40,7 @@ library(xlsx)
 
 Le traitement de onnées est une phase importante et cruciale dans une étude basée sur un sondage. Dans cet article, il sera question d'aborder les aspects essentiels sur:
 
- - les statistiques descriptives (univariée et bivariée);
+ - les statistiques descriptives ;
  - le redressement ;
  - les tableaux; et
  - les figures.
