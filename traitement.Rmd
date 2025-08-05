@@ -11,7 +11,7 @@ knitr::opts_knit$set(root.dir = "C:/Users/statnengineer/Documents")
 Sys.setenv(TZ='UTC')
 
 ```
-//////////////////////////////////////
+/////////////////////////////////////
 Le controle de l'environnement rstudio
 
 ```{r system}
